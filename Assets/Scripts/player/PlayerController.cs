@@ -13,17 +13,14 @@ public class PlayerController : MonoBehaviour
     [Header("Equipment")]
     [SerializeField] private Weapon currentWeapon;
     
-    // Pola prywatne
     private Rigidbody rb;
     private Camera mainCam;
     private GameInput inputActions;
     
-    // Zmienne do logiki ruchu
-    private Vector3 targetPosition; // Dla myszki
-    private Vector2 moveInput;      // Dla WASD
-    private bool isUsingWasdMovement = false; // Flaga trybu sterowania
+    private Vector3 targetPosition;
+    private Vector2 moveInput;
+    private bool isUsingWasdMovement = false;
 
-    // Właściwość (Property) - bezpieczny dostęp do Rigidbody dla Broni
     public Rigidbody Rigidbody => rb;
 
     void Awake()
@@ -44,7 +41,6 @@ public class PlayerController : MonoBehaviour
     void OnEnable()
     {
         inputActions.Player.Enable();
-        // Podpięcie przycisku specjala
         inputActions.Player.SpecialAttack.performed += ctx => UseWeaponSpecial();
     }
 
@@ -56,11 +52,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // Czytamy wejścia
-        moveInput = inputActions.Player.Move.ReadValue<Vector2>(); // WASD
+        moveInput = inputActions.Player.Move.ReadValue<Vector2>();
         Vector2 mousePos = inputActions.Player.MousePosition.ReadValue<Vector2>();
 
-        // Obliczanie celu dla myszki (Raycast)
         if (!isUsingWasdMovement)
         {
             Ray ray = mainCam.ScreenPointToRay(mousePos);
@@ -79,15 +73,15 @@ public class PlayerController : MonoBehaviour
 
         if (isUsingWasdMovement)
         {
-            // --- TRYB WASD (Podczas specjala mieczem) ---
+            //tryb wasd
             Vector3 inputDir = new Vector3(moveInput.x, 0, moveInput.y).normalized;
             desiredVelocity = inputDir * maxSpeed;
         }
         else
         {
-            // --- TRYB MYSZKI (Domyślny) ---
+            //tryb myszki
             Vector3 direction = (targetPosition - transform.position);
-            direction.y = 0; // Ignoruj wysokość
+            direction.y = 0;
             
             if (direction.magnitude > stopDistance)
             {
@@ -97,8 +91,7 @@ public class PlayerController : MonoBehaviour
 
         ApplyPhysicsMovement(desiredVelocity);
 
-        // Aktualizacja fizyki broni
-        if (currentWeapon != null)
+        if (currentWeapon != null && currentWeapon.gameObject.activeInHierarchy)
         {
             currentWeapon.HandlePhysics(Time.fixedDeltaTime);
         }
@@ -109,18 +102,14 @@ public class PlayerController : MonoBehaviour
         Vector3 currentVel = rb.linearVelocity;
         Vector3 velXZ = new Vector3(currentVel.x, 0, currentVel.z);
 
-        // Steering Force
         Vector3 steering = desiredVel - velXZ;
         rb.AddForce(steering * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
 
-        // Tarcie (tylko w poziomie)
         if (velXZ.magnitude > 0.1f)
         {
             rb.AddForce(-velXZ * friction * Time.fixedDeltaTime, ForceMode.Acceleration);
         }
     }
-
-    // --- PUBLIC METHODS FOR WEAPON INTERACTION ---
 
     public void UseWeaponSpecial()
     {
@@ -130,11 +119,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Metoda pozwalająca broni zmienić sterowanie (wymóg GDD dla tarczy)
     public void SetMovementMode(bool useWasd)
     {
         isUsingWasdMovement = useWasd;
-        // Resetujemy pęd przy zmianie trybu, żeby nie było dziwnych przeskoków
-        // (Opcjonalnie, zależy od game feelu)
+    }
+    
+    public void EquipWeapon(Weapon newWeapon)
+    {
+        if (currentWeapon != null)
+        {
+            currentWeapon.gameObject.SetActive(false);
+        }
+
+        currentWeapon = newWeapon;
+        currentWeapon.gameObject.SetActive(true);
+        currentWeapon.Initialize(this);
+
+        Debug.Log($"Gracz wyposażył: {currentWeapon.gameObject.name}");
     }
 }

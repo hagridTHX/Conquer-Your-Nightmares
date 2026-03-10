@@ -18,43 +18,33 @@ public class SwarmEnemy : Enemy
     [Tooltip("Cel: Jak mocno stado ciągnie w stronę gracza.")]
     [SerializeField] private float targetWeight = 3.0f;
 
-    void FixedUpdate()
+    protected override void HandleMovement()
     {
-        if (playerTarget == null || isDead) return;
-
         Vector3 separationMove = Vector3.zero;
         Vector3 cohesionMove = Vector3.zero;
         Vector3 alignmentMove = Vector3.zero;
         int swarmCount = 0;
 
-        // Szukamy kolegów w promieniu
         Collider[] neighbors = Physics.OverlapSphere(transform.position, swarmRadius);
 
         foreach (Collider col in neighbors)
         {
             if (col.gameObject != this.gameObject)
             {
-                // Interesują nas tylko potwory z tego samego stada
                 SwarmEnemy otherEnemy = col.GetComponent<SwarmEnemy>();
                 if (otherEnemy != null)
                 {
-                    // 1. SEPARACJA (odpychanie działa silniej, gdy są bardzo blisko)
                     Vector3 pushAway = transform.position - col.transform.position;
                     pushAway.y = 0;
                     float distance = pushAway.magnitude;
                     
                     if (distance > 0.01f && distance < swarmRadius * 0.5f)
                     {
-                        // Im bliżej, tym silniej odpycha
                         separationMove += pushAway.normalized / distance;
                     }
 
-                    // 2. SPÓJNOŚĆ (zbieranie pozycji sąsiadów do wyliczenia środka grupy)
                     cohesionMove += col.transform.position;
-
-                    // 3. WYRÓWNANIE (zbieranie kierunku ruchu sąsiadów)
                     alignmentMove += col.transform.forward;
-
                     swarmCount++;
                 }
             }
@@ -62,25 +52,21 @@ public class SwarmEnemy : Enemy
 
         if (swarmCount > 0)
         {
-            // Wyliczanie średnich dla stada
             separationMove /= swarmCount;
 
-            // Środek masy grupy (idź w stronę centrum chmary)
             cohesionMove /= swarmCount;
             cohesionMove = (cohesionMove - transform.position).normalized;
             cohesionMove.y = 0;
 
-            // Średni kierunek grupy
             alignmentMove /= swarmCount;
             alignmentMove.y = 0;
             alignmentMove = alignmentMove.normalized;
         }
 
-        // 4. CEL (Kierunek do gracza)
         Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
         directionToPlayer.y = 0;
 
-        // --- SUMOWANIE WSZYSTKICH SIŁ ---
+        //flocking - sumowanie sil
         Vector3 finalDirection = (directionToPlayer * targetWeight) + 
                                  (separationMove * separationWeight) + 
                                  (cohesionMove * cohesionWeight) + 
@@ -89,9 +75,7 @@ public class SwarmEnemy : Enemy
         finalDirection.y = 0;
         finalDirection.Normalize();
 
-        // --- RUCH I OBRÓT ---
-        Vector3 newPos = transform.position + finalDirection * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPos);
+        rb.linearVelocity = new Vector3(finalDirection.x * moveSpeed, rb.linearVelocity.y, finalDirection.z * moveSpeed);
 
         if (finalDirection != Vector3.zero)
         {

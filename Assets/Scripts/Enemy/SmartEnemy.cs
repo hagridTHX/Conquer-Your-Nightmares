@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SmartEnemy : Enemy // <-- Dziedziczy z Enemy
+public class SmartEnemy : Enemy 
 {
     [Header("Inteligencja")]
     [Tooltip("Dystans, przy którym wróg zaczyna się bać ataku.")]
@@ -13,14 +13,14 @@ public class SmartEnemy : Enemy // <-- Dziedziczy z Enemy
     [SerializeField] private float dodgeSpeed = 12f;
 
     [Tooltip("Czas trwania uniku (w sekundach). Zapobiega 'drganiu' wroga.")]
-    [SerializeField] private float dodgeDuration = 0.3f; // <--- NOWOŚĆ
+    [SerializeField] private float dodgeDuration = 0.3f;
 
     private Rigidbody playerRb;
-    private float dodgeTimer = 0f; // <--- NOWOŚĆ: Licznik czasu uniku
+    private float dodgeTimer = 0f;
 
     protected override void Start()
     {
-        base.Start(); // Wywołaj start z klasy bazowej (szukanie gracza, HP)
+        base.Start(); 
         
         if (playerTarget != null)
         {
@@ -28,61 +28,45 @@ public class SmartEnemy : Enemy // <-- Dziedziczy z Enemy
         }
     }
 
-    void FixedUpdate()
+    protected override void HandleMovement()
     {
-        if (playerTarget == null || isDead) return;
-
         float distanceToPlayer = Vector3.Distance(transform.position, playerTarget.position);
         Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
         directionToPlayer.y = 0;
-
-        // --- MÓZG PRZECIWNIKA ---
         
-        // 1. Zmniejszamy licznik uniku (jeśli trwa)
         if (dodgeTimer > 0)
         {
             dodgeTimer -= Time.fixedDeltaTime;
         }
 
-        // 2. Sprawdzamy zagrożenie TYLKO wtedy, gdy wróg aktualnie NIE robi uniku
         if (dodgeTimer <= 0 && playerRb != null && distanceToPlayer < detectionRange)
         {
             float playerSpeed = playerRb.linearVelocity.magnitude;
-
             if (playerSpeed > dangerousVelocity)
             {
-                // Zaczynamy unik! Ustawiamy czas trwania (np. na 0.5 sekundy)
                 dodgeTimer = dodgeDuration;
             }
         }
 
-        // --- RUCH ---
-
         Vector3 moveDir;
         float currentSpeed;
 
-        // Jeśli licznik jest większy od 0, wróg JEST w trakcie odskakiwania
         if (dodgeTimer > 0)
         {
-            // UCIEKAJ! (Wektor przeciwny do gracza)
+            //unik - ucieka
             moveDir = -directionToPlayer;
             currentSpeed = dodgeSpeed; 
-            
-            // Debug: Błękitny promień oznacza, że wróg jest w trakcie uniku
             Debug.DrawRay(transform.position, Vector3.up * 3, Color.cyan);
         }
         else
         {
-            // GOŃ!
+            //goni gracza
             moveDir = directionToPlayer;
             currentSpeed = moveSpeed;
         }
 
-        // Fizyczne przesunięcie
-        Vector3 newPos = transform.position + moveDir * currentSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPos);
+        rb.linearVelocity = new Vector3(moveDir.x * currentSpeed, rb.linearVelocity.y, moveDir.z * currentSpeed);
 
-        // Obrót zawsze w stronę gracza
         if (directionToPlayer != Vector3.zero)
         {
             Quaternion lookRot = Quaternion.LookRotation(directionToPlayer);

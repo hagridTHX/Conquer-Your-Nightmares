@@ -15,18 +15,14 @@ public class TrainingDummy : MonoBehaviour, IDamageable
         rend = GetComponent<Renderer>();
         currentHealth = maxHealth;
         
-        // Kukła musi mieć fizykę, żeby odlecieć po uderzeniu (knockback)
-        rb.mass = 50f; // Ciężki obiekt
-        rb.linearDamping = 5f;  // Szybko wyhamowuje
+        rb.mass = 50f;
+        rb.linearDamping = 5f;
     }
 
     public void TakeDamage(float amount, Vector3 knockbackDir, float knockbackForce)
     {
         currentHealth -= amount;
-        // Efekt wizualny (błyśnięcie na czerwono)
         StartCoroutine(FlashRed());
-
-        // Aplikacja Knockbacku (odrzutu)
         rb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
 
         if (currentHealth <= 0)
