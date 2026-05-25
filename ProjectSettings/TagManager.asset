@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Obstacle
   - Selectable
+  - MenuBed
+  - MenuPicture
+  - MenuChest
+  - MenuDesk
+  - MenuBackButton
   layers:
   - Default
   - TransparentFX
