@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fbaace1d30b4bc419b7d6425aecc6a2, type: 3}
   m_Name: Increase Max Health
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
-  upgradeName: N
-  description: I
+  upgradeName: A
+  description: B
   icon: {fileID: 0}
   maxLevel: 0
   addMaxHealth: 100

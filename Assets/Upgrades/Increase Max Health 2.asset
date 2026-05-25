@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Increase Max Health 2
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeData
   upgradeName: E
-  description: R
+  description: F
   icon: {fileID: 0}
   maxLevel: 0
   addMaxHealth: 100
