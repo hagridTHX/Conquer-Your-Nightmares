@@ -4,20 +4,20 @@ using TMPro;
 
 public class HUDManager : MonoBehaviour
 {
-    [Header("Referencje do Gracza")]
+    [Header("Player References")]
     public PlayerStats playerStats;
 
-    [Header("Paski i Teksty")]
+    [Header("Bars and Text")]
     public Image healthBarFill;
     public Image xpBarFill;
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI timerText;
 
-    [Header("Artefakty")]
+    [Header("Artifacts")]
     public Transform artifactsContainer; 
     public GameObject artifactIconPrefab; 
 
-    // USUNIĘTO: private float gameTimer = 0f;
+    // Timer is sourced from GameManager to avoid local drift and double-accounting.
 
     void Start()
     {
@@ -52,7 +52,7 @@ public class HUDManager : MonoBehaviour
         if (levelText != null) levelText.text = "LVL: " + newLevel;
     }
 
-    // Dodaliśmy parametr przekazujący oficjalny czas gry
+    // Accept authoritative session time so UI stays consistent with game state.
     private void UpdateTimerDisplay(float currentTime)
     {
         if (timerText != null)

@@ -6,13 +6,13 @@ using UnityEngine.UI;
 
 public class PauseMenuManager : MonoBehaviour
 {
-    [Header("Referencje UI")]
+    [Header("UI References")]
     public GameObject pauseMenuPanel;
     public GameObject settingsPanel; 
     public Transform statsContainer; 
     public GameObject statPrefab;    
 
-    [Header("Referencje Logiki")]
+    [Header("Logic References")]
     public UpgradeManager upgradeManager;
 
     private bool isPaused = false;

@@ -2,20 +2,20 @@ using UnityEngine;
 
 public class SwarmEnemy : Enemy
 {
-    [Header("Ustawienia Chmary (Flocking)")]
-    [Tooltip("Z jakiej odległości potwór 'czuje' innych w grupie.")]
+    [Header("Swarm Settings (Flocking)")]
+    [Tooltip("Neighbor detection radius for flocking.")]
     [SerializeField] private float swarmRadius = 3.0f;
 
-    [Tooltip("Separacja: Jak mocno odpycha się, żeby nie wchodzić na innych.")]
+    [Tooltip("Separation strength to avoid overlap.")]
     [SerializeField] private float separationWeight = 2.0f;
 
-    [Tooltip("Spójność: Jak bardzo dąży do bycia wewnątrz grupy (tworzy zbitą chmarę).")]
+    [Tooltip("Cohesion strength to keep the swarm compact.")]
     [SerializeField] private float cohesionWeight = 1.5f;
 
-    [Tooltip("Wyrównanie: Jak bardzo chce iść równolegle do grupy.")]
+    [Tooltip("Alignment strength to match group heading.")]
     [SerializeField] private float alignmentWeight = 1.0f;
 
-    [Tooltip("Cel: Jak mocno stado ciągnie w stronę gracza.")]
+    [Tooltip("Target pull toward the player.")]
     [SerializeField] private float targetWeight = 3.0f;
 
     protected override void HandleMovement()
@@ -66,7 +66,7 @@ public class SwarmEnemy : Enemy
         Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
         directionToPlayer.y = 0;
 
-        //flocking - sumowanie sil
+        // Blend weighted steering terms to keep cohesion while pursuing the target.
         Vector3 finalDirection = (directionToPlayer * targetWeight) + 
                                  (separationMove * separationWeight) + 
                                  (cohesionMove * cohesionWeight) + 

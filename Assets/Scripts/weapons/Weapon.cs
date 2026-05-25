@@ -14,7 +14,7 @@ public abstract class Weapon : MonoBehaviour
     public float knockbackForce = 0f;
 
     [Header("Setup")]
-    [Tooltip("Przeciągnij tutaj obiekt Model (to co faktycznie uderza).")]
+    [Tooltip("Assign the model transform that actually deals damage.")]
     [SerializeField] protected Transform damagePoint; 
 
     [Header("Special Ability")]
@@ -30,7 +30,7 @@ public abstract class Weapon : MonoBehaviour
     private Vector3 lastPointPosition;
     protected float currentSpeed; 
 
-    // Nowa metoda do wywoływania ataków opartych na kierunku (LPM / PPM)
+    // Directional trigger lets weapons implement left/right arcs from input.
     public virtual void TriggerAttack(bool swingLeft) { }
     public virtual void Initialize(PlayerController owner)
     {

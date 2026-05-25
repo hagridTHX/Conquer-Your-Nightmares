@@ -3,20 +3,20 @@ using UnityEngine;
 public class Sword : Weapon
 {
     [Header("Momentum Attack (LPM/PPM)")]
-    [Tooltip("Minimalna siła ciosu, gdy gracz stoi w miejscu.")]
+    [Tooltip("Base force when the player is stationary.")]
     [SerializeField] private float baseSwingForce = 1200f;
-    [Tooltip("Mnożnik pędu - jak mocno prędkość gracza buffuje siłę uderzenia.")]
+    [Tooltip("Momentum multiplier that scales force with player speed.")]
     [SerializeField] private float momentumMultiplier = 60f;
     
-    [Tooltip("Ile prędkości zostaje graczowi po ataku. (0.5 = traci połowę pędu, 1.0 = w ogóle nie zwalnia).")]
+    [Tooltip("Velocity retained after the attack (0.5 halves momentum, 1.0 preserves it).")]
     [Range(0f, 1f)]
-    [SerializeField] private float playerBrakingFactor = 0.5f; // Zmieniłem na 0.5 dla lepszego "flow"
+    [SerializeField] private float playerBrakingFactor = 0.5f; // Lower braking preserves momentum for attack flow.
     [SerializeField] private float attackCooldown = 0.4f;
 
-    [Header("Swing Arc Control (Nowość!)")]
-    [Tooltip("Maksymalny kąt (w stopniach), jaki pokona miecz podczas jednego zamachu.")]
+    [Header("Swing Arc Control")]
+    [Tooltip("Maximum sweep angle in degrees for a single swing.")]
     [SerializeField] private float maxSweepAngle = 150f;
-    [Tooltip("Ile % pędu zostaje po zakończeniu zamachu (tzw. follow-through). 0.1 to ostre zatrzymanie.")]
+    [Tooltip("Momentum retained after a swing (follow-through); 0.1 is a hard stop.")]
     [Range(0f, 1f)]
     [SerializeField] private float followThroughBrake = 0.05f; 
 
@@ -42,7 +42,7 @@ public class Sword : Weapon
     private Vector3 lastPlayerVelocity;
     private float lastAttackTime;
 
-    // Zmienne do kontrolowania łuku zamachu
+    // Swing arc state bounds rotation to a deliberate, readable cut.
     private bool isSwinging;
     private float swingStartAngle;
 
@@ -68,8 +68,7 @@ public class Sword : Weapon
         {
             playerSpeed = playerRb.linearVelocity.magnitude;
 
-            // Transfer energii "z głową" - gracz zatrzymuje część pędu (np. 50%), 
-            // więc robi płynny poślizg/dash podczas ataku.
+            // Retain partial momentum so the attack feels like a dash without runaway speed.
             playerRb.linearVelocity *= playerBrakingFactor;
         }
 
@@ -77,9 +76,9 @@ public class Sword : Weapon
         float totalSwingForce = baseSwingForce + momentumBonus;
         float swingDirection = swingLeft ? 1f : -1f;
 
-        // INICJALIZACJA KONTROLOWANEGO ZAMACHU
+        // Start a controlled swing to cap arc length and enable deterministic follow-through.
         isSwinging = true;
-        swingStartAngle = currentGlobalAngleY; // Zapamiętujemy, gdzie zaczęliśmy ciąć
+        swingStartAngle = currentGlobalAngleY; // Capture start angle to measure swept arc.
         
         angularVelocity = totalSwingForce * swingDirection;
 
@@ -102,8 +101,7 @@ public class Sword : Weapon
         Vector3 swordForward = Quaternion.Euler(0, currentGlobalAngleY, 0) * Vector3.forward;
         float torque = Vector3.Cross(swordForward, inertiaForce).y;
 
-        // Opór wiatru działa tylko wtedy, gdy nie robimy aktywnego zamachu
-        // (żeby wiatr nie dusił siły naszego ataku w trakcie cięcia)
+        // Apply wind drag only outside active swings to avoid damping attack impulse.
         if (!isSwinging && currentVelocity.sqrMagnitude > 0.1f)
         {
             Vector3 windDir = -currentVelocity.normalized;
@@ -119,17 +117,17 @@ public class Sword : Weapon
 
         currentGlobalAngleY += angularVelocity * dt; 
 
-        // KONTROLA ŁUKU ZAMACHU (Hamulec)
+        // Swing-arc limiter applies a brake once the configured sweep is reached.
         if (isSwinging)
         {
-            // Mierzymy, ile stopni w globalnej przestrzeni pokonał już miecz
+            // Measure the swept angle in world space for a stable arc limit.
             float traveledAngle = Mathf.Abs(currentGlobalAngleY - swingStartAngle);
             
-            // Jeśli miecz przeleciał nasz zadany kąt (np. 150 stopni)
+            // End the swing once the configured arc length is exceeded.
             if (traveledAngle >= maxSweepAngle)
             {
-                isSwinging = false; // Koniec aktywnego cięcia
-                angularVelocity *= followThroughBrake; // Ostre wyhamowanie, zostaje ułamek pędu
+                isSwinging = false; // End the active cut.
+                angularVelocity *= followThroughBrake; // Hard brake with a small follow-through.
             }
         }
 
@@ -143,7 +141,7 @@ public class Sword : Weapon
 
     protected override void HandleObstacleHit(Collider obstacle)
     {
-        isSwinging = false; // Jeśli uderzymy w ścianę, od razu przerywamy zamach
+        isSwinging = false; // Cancel the swing on wall impact to avoid tunneling.
         angularVelocity = -angularVelocity * bounceBounciness;
         currentGlobalAngleY += (angularVelocity > 0 ? 5f : -5f);
         ApplyRotation();
@@ -151,7 +149,7 @@ public class Sword : Weapon
 
     protected override void HandleEnemyHit()
     {
-        // Cięcie przez mięso przeciwnika lekko zwalnia miecz, ale nie przerywa łuku
+        // Enemy hits bleed speed without breaking the swing arc.
         angularVelocity -= angularVelocity * hitResistance;
     }
 

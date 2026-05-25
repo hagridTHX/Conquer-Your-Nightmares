@@ -4,7 +4,6 @@ public class ChaserEnemy : Enemy
 {
     protected override void HandleMovement()
     {
-        // oblicz kierunek
         Vector3 direction = (playerTarget.position - transform.position).normalized;
         direction.y = 0; 
 

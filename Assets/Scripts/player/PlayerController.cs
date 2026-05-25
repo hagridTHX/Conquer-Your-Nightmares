@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviour
     [Header("Equipment")]
     [SerializeField] private Weapon currentWeapon;
     
-    // --- NOWOŚĆ: Miejsce na podpięcie Animatora ---
     [Header("Animation")]
     [SerializeField] private Animator animator;
     
@@ -56,11 +55,13 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Sample input in Update to avoid missed events; apply physics in FixedUpdate.
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
         Vector2 mousePos = inputActions.Player.MousePosition.ReadValue<Vector2>();
 
         if (!isUsingWasdMovement)
         {
+            // Intersect the mouse ray with a ground plane to keep aiming planar.
             Ray ray = mainCam.ScreenPointToRay(mousePos);
             Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
             if (groundPlane.Raycast(ray, out float rayDist))
@@ -85,17 +86,16 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Compute desired planar velocity first, then hand off to physics for integration.
         Vector3 desiredVelocity = Vector3.zero;
 
         if (isUsingWasdMovement)
         {
-            // tryb wasd
             Vector3 inputDir = new Vector3(moveInput.x, 0, moveInput.y).normalized;
             desiredVelocity = inputDir * maxSpeed;
         }
         else
         {
-            // tryb myszki
             Vector3 direction = (targetPosition - transform.position);
             direction.y = 0;
             
@@ -112,21 +112,18 @@ public class PlayerController : MonoBehaviour
             currentWeapon.HandlePhysics(Time.fixedDeltaTime);
         }
 
-        // --- NOWOŚĆ 1: OBRÓT W STRONĘ MYSZKI ---
         Vector3 lookDir = targetPosition - transform.position;
-        lookDir.y = 0; // Ignorujemy oś Y, żeby postać nie pochylała się w podłogę
+        lookDir.y = 0; 
         
+        // Use squared magnitude to avoid a sqrt in the idle-rotation check.
         if (lookDir.sqrMagnitude > 0.1f)
         {
             Quaternion targetRot = Quaternion.LookRotation(lookDir);
-            // Slerp zapewnia płynne, miękkie obracanie się postaci
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, 15f * Time.fixedDeltaTime));
         }
 
-        // --- NOWOŚĆ 2: WŁĄCZENIE ANIMACJI CHODZENIA ---
         if (animator != null)
         {
-            // Mierzymy wyłącznie prędkość poziomą (ignorujemy spadanie w dół)
             Vector3 horizVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             animator.SetFloat("Speed", horizVel.magnitude);
         }
@@ -137,6 +134,7 @@ public class PlayerController : MonoBehaviour
         Vector3 currentVel = rb.linearVelocity;
         Vector3 velXZ = new Vector3(currentVel.x, 0, currentVel.z);
 
+        // Steering is a velocity delta; acceleration mode keeps it mass-independent.
         Vector3 steering = desiredVel - velXZ;
         rb.AddForce(steering * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
 

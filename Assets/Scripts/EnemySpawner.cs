@@ -3,16 +3,16 @@ using System.Collections.Generic;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Referencje")]
+    [Header("References")]
     [SerializeField] private Transform player;
     [SerializeField] private List<GameObject> normalEnemyPrefabs; 
 
-    [Header("Ustawienia Zwyklego Spawnu")]
+    [Header("Normal Spawn Settings")]
     [SerializeField] private float spawnRadius = 25f;
     [SerializeField] private float baseSpawnRate = 2f;
     [SerializeField] private float minSpawnRate = 0.2f;
 
-    [Header("Ustawienia Chmary (Swarm)")]
+    [Header("Swarm Spawn Settings")]
     [SerializeField] private GameObject swarmPrefab;
     [SerializeField] private float swarmSpawnRate = 15f; 
     [SerializeField] private int minSwarmSize = 10;

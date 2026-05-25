@@ -4,15 +4,15 @@ using System.Linq;
 
 public class UpgradeManager : MonoBehaviour
 {
-    [Header("Ustawienia Testowe")]
-    [Tooltip("Jeśli zaznaczone, po wbiciu poziomu okienko wyboru kart się NIE POJAWI.")]
+    [Header("Test Settings")]
+    [Tooltip("When enabled, the level-up card panel is suppressed.")]
     public bool disableUpgradesForTesting = false; 
 
-    [Header("Pula Wszystkich Ulepszeń")]
-    [Tooltip("Przeciągnij tu wszystkie stworzone pliki kart ulepszeń z folderu Projektu!")]
+    [Header("All Upgrades Pool")]
+    [Tooltip("Assign all upgrade card assets from the Project.")]
     public List<UpgradeData> allPossibleUpgrades;
 
-    [Header("Posiadane Ulepszenia (Tylko do podglądu)")]
+    [Header("Active Upgrades (Read-Only)")]
     public List<UpgradeEntry> activeUpgrades = new List<UpgradeEntry>();
 
     [System.Serializable]

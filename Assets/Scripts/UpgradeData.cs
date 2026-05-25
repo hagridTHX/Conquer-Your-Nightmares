@@ -3,24 +3,24 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Upgrade", menuName = "CYN/Upgrade Card")]
 public class UpgradeData : ScriptableObject
 {
-    [Header("Wygląd w UI")]
+    [Header("UI Presentation")]
     public string upgradeName;
     [TextArea] public string description;
     public Sprite icon;
 
-    [Header("Limity")]
-    [Tooltip("Ile razy można wybrać ten buff? 0 = nieskończoność")]
+    [Header("Limits")]
+    [Tooltip("How many times this upgrade can be selected; 0 means unlimited.")]
     public int maxLevel = 0; 
 
-    [Header("Statystyki Postaci")]
+    [Header("Player Stats")]
     public float addMaxHealth = 0f;
     public float moveSpeedMultiplier = 0f;
 
-    [Header("Statystyki Dla każdej broni")]
+    [Header("Weapon Stats (All Weapons)")]
     public float damageMultBonus = 0f;
     public float swingSpeedMultBonus = 0f;
 
-    [Header("Statystyki Specyficzne (np. dla Miecza)")]
+    [Header("Weapon-Specific Stats (e.g., Sword)")]
     public float massInertiaChange = 0f;
 
     public virtual void ApplyUpgrade(PlayerController player, PlayerStats stats, Weapon weapon)

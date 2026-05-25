@@ -6,14 +6,14 @@ public class GameManager : MonoBehaviour
 
     public enum GameState { WeaponSelection, Playing, BossFight, GameOver, Victory }
     
-    [Header("Status Gry")]
+    [Header("Game State")]
     public GameState currentState;
 
     [SerializeField] private float gameTime = 0f;
     public float GameTime => gameTime;
 
-    [Header("Skalowanie Trudnosci")]
-    [Tooltip("O ile procent rosna statystyki wrogow z kazda minuta (np. 0.5 = 50% mocniejsi co minute).")]
+    [Header("Difficulty Scaling")]
+    [Tooltip("Percent growth in enemy stats per minute (e.g., 0.5 = +50% per minute).")]
     [SerializeField] private float difficultyIncreasePerMinute = 0.05f;
 
     void Awake()

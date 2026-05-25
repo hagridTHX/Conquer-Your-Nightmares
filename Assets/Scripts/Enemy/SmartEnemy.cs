@@ -2,17 +2,16 @@ using UnityEngine;
 
 public class SmartEnemy : Enemy 
 {
-    [Header("Inteligencja")]
-    [Tooltip("Dystans, przy którym wróg zaczyna się bać ataku.")]
+    [Tooltip("Distance at which the enemy starts anticipating an attack.")]
     [SerializeField] private float detectionRange = 5.0f;
     
-    [Tooltip("Jak szybko gracz musi się poruszać, żeby wróg uznał to za atak.")]
+    [Tooltip("Player speed threshold that triggers a dodge response.")]
     [SerializeField] private float dangerousVelocity = 5.0f;
     
-    [Tooltip("Jak szybko cofa się przy uniku.")]
+    [Tooltip("Retreat speed during a dodge.")]
     [SerializeField] private float dodgeSpeed = 12f;
 
-    [Tooltip("Czas trwania uniku (w sekundach). Zapobiega 'drganiu' wroga.")]
+    [Tooltip("Dodge duration in seconds; prevents rapid oscillation.")]
     [SerializeField] private float dodgeDuration = 0.3f;
 
     private Rigidbody playerRb;
@@ -53,14 +52,12 @@ public class SmartEnemy : Enemy
 
         if (dodgeTimer > 0)
         {
-            //unik - ucieka
             moveDir = -directionToPlayer;
             currentSpeed = dodgeSpeed; 
             Debug.DrawRay(transform.position, Vector3.up * 3, Color.cyan);
         }
         else
         {
-            //goni gracza
             moveDir = directionToPlayer;
             currentSpeed = moveSpeed;
         }

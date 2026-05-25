@@ -3,16 +3,16 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public abstract class Enemy : MonoBehaviour, IDamageable
 {
-    [Header("Glowne Statystyki")]
+    [Header("Core Stats")]
     [SerializeField] protected float maxHealth = 30f;
     [SerializeField] protected float moveSpeed = 5f;
     
-    [Header("Statystyki Ataku")]
+    [Header("Attack Stats")]
     [SerializeField] protected float damage = 15f;
     [SerializeField] protected float knockbackOnPlayer = 3f;
     [SerializeField] protected float attackCooldown = 0.8f;
 
-    [Header("Fizyka")]
+    [Header("Physics")]
     [SerializeField] protected float knockbackResistance = 0f;
     
     [Header("XP")]
@@ -42,7 +42,6 @@ public abstract class Enemy : MonoBehaviour, IDamageable
     {
         if (isDead || playerTarget == null) return;
 
-        //recykling wrogów - teleport gdy za daleko
         if (Vector3.Distance(transform.position, playerTarget.position) > 100f)
         {
             float teleportRadius = 35f;
@@ -70,14 +69,12 @@ public abstract class Enemy : MonoBehaviour, IDamageable
             return; 
         }
 
-        //ogłuszony - czeka na koniec knockbacku
         if (knockbackTimer > 0)
         {
             knockbackTimer -= Time.fixedDeltaTime;
             return; 
         }
 
-        //dotyka gracza - blokada ruchu
         if (isTouchingPlayer)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);

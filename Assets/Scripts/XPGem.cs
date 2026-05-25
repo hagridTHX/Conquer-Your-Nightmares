@@ -3,13 +3,13 @@ using UnityEngine;
 public class XPGem : MonoBehaviour
 {
     [Header("Gem Settings")]
-    [Tooltip("Ile punktów doświadczenia daje ten kryształ")]
+    [Tooltip("XP granted when collected.")]
     public float xpValue = 10f;
     
-    [Tooltip("Z jakiej odległości kryształ zaczyna lecieć do gracza (tzw. zasięg podnoszenia)")]
+    [Tooltip("Pickup radius that triggers homing.")]
     public float magnetRadius = 5f;
     
-    [Tooltip("Jak szybko kryształ leci do gracza, gdy już zostanie przyciągnięty")]
+    [Tooltip("Homing speed once magnetized.")]
     public float flySpeed = 15f;
 
     private Transform playerTarget;
@@ -17,7 +17,7 @@ public class XPGem : MonoBehaviour
 
     void Start()
     {
-        // Kryształ sam szuka gracza na scenie zaraz po pojawieniu się
+        // Resolve the player once on spawn to avoid repeated scene-wide searches.
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -29,22 +29,22 @@ public class XPGem : MonoBehaviour
     {
         if (playerTarget == null) return;
 
-        // Jeśli kryształ nie jest jeszcze przyciągany, sprawdzamy odległość
+        // Gate homing until the pickup radius is reached to keep idle gems cheap.
         if (!isMagnetized)
         {
             float distance = Vector3.Distance(transform.position, playerTarget.position);
             if (distance <= magnetRadius)
             {
-                isMagnetized = true; // Włączamy magnes!
+                isMagnetized = true; // Switch to homing state once inside radius.
             }
         }
         else
         {
-            // MAGNES WŁĄCZONY: Kryształ leci płynnie do klatki piersiowej gracza (Vector3.up)
+            // Home to a chest-height offset to avoid ground clipping during pickup.
             Vector3 targetPos = playerTarget.position + Vector3.up;
             transform.position = Vector3.MoveTowards(transform.position, targetPos, flySpeed * Time.deltaTime);
 
-            // Jeśli jest wystarczająco blisko - gracz go zjada
+            // Auto-collect once within a small radius to prevent jitter at close range.
             if (Vector3.Distance(transform.position, targetPos) < 0.5f)
             {
                 CollectGem();
@@ -54,14 +54,14 @@ public class XPGem : MonoBehaviour
 
     private void CollectGem()
     {
-        // Pobieramy nasz nowy skrypt PlayerStats i dodajemy XP
+        // Route XP through PlayerStats so progression stays centralized.
         PlayerStats stats = playerTarget.GetComponent<PlayerStats>();
         if (stats != null)
         {
             stats.AddXP(xpValue);
         }
         
-        // Niszczymy obiekt kryształka ze sceny
+        // Destroy after grant to prevent duplicate pickups.
         Destroy(gameObject);
     }
 }

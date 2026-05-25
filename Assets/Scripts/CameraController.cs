@@ -3,12 +3,12 @@ using UnityEngine.InputSystem;
 
 public class CameraController : MonoBehaviour
 {
-    [Header("Ustawienia Kamery")]
-    [Tooltip("Jak szybko kamera przesuwa się na WASD")]
+    [Header("Camera Settings")]
+    [Tooltip("Pan speed for manual camera control.")]
     [SerializeField] private float panSpeed = 20f;
 
-    [Header("Śledzenie Gracza (Opcjonalne)")]
-    [Tooltip("Czy kamera ma wracać do gracza, gdy nic nie wciskamy?")]
+    [Header("Player Follow (Optional)")]
+    [Tooltip("Return to the player when no input is provided.")]
     [SerializeField] private bool returnToPlayer = false;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private float returnSpeed = 2.0f;

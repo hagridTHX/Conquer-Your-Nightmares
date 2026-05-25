@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 public class ObstacleManager : MonoBehaviour
 {
-    [Header("Referencje")]
+    [Header("References")]
     [SerializeField] private Transform player;
     [SerializeField] private GameObject[] obstaclePrefabs;
     
-    [Header("Ustawienia Zageszczenia")]
-    [Tooltip("Glowne zageszczenie: Ile przeszkod ma otaczac kamere w danej chwili.")]
+    [Header("Density Settings")]
+    [Tooltip("Target obstacle count around the camera.")]
     [SerializeField] [Range(10, 300)] private int maxObstacles = 75;
 
-    [Tooltip("Minimalny odstep miedzy przeszkodami, zeby nie wchodzily jedna w druga.")]
+    [Tooltip("Minimum spacing to prevent overlaps.")]
     [SerializeField] [Range(1f, 10f)] private float minSpacing = 3.0f;
 
-    [Header("Obszar Generowania")]
+    [Header("Spawn Area")]
     [SerializeField] private float spawnRadius = 35f;
     [SerializeField] private float despawnRadius = 50f;
 
@@ -46,7 +46,7 @@ public class ObstacleManager : MonoBehaviour
 
         Vector3 currentCenter = GetCameraCenter();
 
-        //usuwanie odleglych przeszkod
+        // Cull obstacles outside both camera and player radii to keep density bounded.
         for (int i = activeObstacles.Count - 1; i >= 0; i--)
         {
             if (activeObstacles[i] == null) continue;
@@ -70,7 +70,7 @@ public class ObstacleManager : MonoBehaviour
             }
         }
 
-        //tworzenie nowych przeszkod
+        // Spawn offscreen to maintain density without visible popping.
         int loopFailsafe = 0;
         while (localObstacles < maxObstacles && loopFailsafe < 20)
         {
@@ -103,6 +103,7 @@ public class ObstacleManager : MonoBehaviour
     Vector3 GetCameraCenter()
     {
         if (mainCam == null) return Vector3.zero;
+        // Project the camera center onto the ground plane to anchor spawn logic in world space.
         Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
         if (groundPlane.Raycast(ray, out float distance))

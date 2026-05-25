@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 public class UpgradeUIManager : MonoBehaviour
 {
-    [Header("Referencje")]
+    [Header("References")]
     public PlayerStats playerStats;
     public UpgradeManager upgradeManager;
     
-    [Header("UI Elementy")]
+    [Header("UI Elements")]
     public GameObject levelUpPanel; 
     public Button[] upgradeButtons; 
 
