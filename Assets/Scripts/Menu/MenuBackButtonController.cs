@@ -8,6 +8,7 @@ public class MenuBackButtonController : MonoBehaviour
     [SerializeField] GameObject CameraItems;
     [SerializeField] GameObject CameraSettings;
     [SerializeField] GameObject MenuBackButton;
+    [SerializeField] TextMesh MenuText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Update()
@@ -24,7 +25,7 @@ public class MenuBackButtonController : MonoBehaviour
 
     public void BackToMainMenu()
     {
-        Debug.Log("Back to main menu");
+
         CameraMain.SetActive(true);
         CameraBed.SetActive(false);
         CameraBedTransition.SetActive(false);
