@@ -5,26 +5,28 @@ using System.Collections.Generic;
 
 public class UpgradeUIManager : MonoBehaviour
 {
-    [Header("References")]
-    public PlayerStats playerStats;
-    public UpgradeManager upgradeManager;
-    
-    [Header("UI Elements")]
-    public GameObject levelUpPanel; 
-    public Button[] upgradeButtons; 
+    [SerializeField] private PlayerStats playerStats;
+    [SerializeField] private UpgradeManager upgradeManager;
+    [SerializeField] private GameObject levelUpPanel; 
+    [SerializeField] private Button[] upgradeButtons; 
+    [SerializeField] private ButtonUI[] buttonUIs;
+
+    public PlayerStats PlayerStats { get => playerStats; set => playerStats = value; }
+    public UpgradeManager UpgradeManager { get => upgradeManager; set => upgradeManager = value; }
+    public GameObject LevelUpPanel { get => levelUpPanel; set => levelUpPanel = value; }
+    public Button[] UpgradeButtons { get => upgradeButtons; set => upgradeButtons = value; }
+    public ButtonUI[] ButtonUIs { get => buttonUIs; set => buttonUIs = value; }
 
     [System.Serializable]
     public class ButtonUI
     {
-        public TextMeshProUGUI nameText;
         public TextMeshProUGUI descText;
         public Image iconImage;
     }
-    public ButtonUI[] buttonUIs;
 
-    void Start()
+    private void Start()
     {
-        levelUpPanel.SetActive(false);
+        if (levelUpPanel != null) levelUpPanel.SetActive(false);
         if (playerStats != null)
         {
             playerStats.OnLevelUp.AddListener(HandleLevelUp);
@@ -33,26 +35,38 @@ public class UpgradeUIManager : MonoBehaviour
 
     private void HandleLevelUp(int newLevel)
     {
-        if (upgradeManager.disableUpgradesForTesting) return;
+        if (upgradeManager.DisableUpgradesForTesting) return;
 
         Time.timeScale = 0f; 
-        levelUpPanel.SetActive(true);
+        if (levelUpPanel != null) levelUpPanel.SetActive(true);
 
-        List<UpgradeData> drawnCards = upgradeManager.GetRandomUpgrades(3);
+        List<UpgradeManager.UpgradeOption> drawnCards = upgradeManager.GetRandomUpgrades(3);
 
         for (int i = 0; i < upgradeButtons.Length; i++)
         {
             if (i < drawnCards.Count)
             {
-                UpgradeData cardData = drawnCards[i];
+                UpgradeManager.UpgradeOption cardOption = drawnCards[i];
                 upgradeButtons[i].gameObject.SetActive(true);
                 
-                buttonUIs[i].nameText.text = cardData.upgradeName;
-                buttonUIs[i].descText.text = cardData.description;
-                if(cardData.icon != null) buttonUIs[i].iconImage.sprite = cardData.icon;
+                if (buttonUIs[i].descText != null) 
+                {
+                    buttonUIs[i].descText.text = $"<b>{cardOption.BaseData.UpgradeName}</b>\n\n" +
+                                                 $"{cardOption.BaseData.GetFormattedDescription(cardOption.Tier.multiplier)}";
+
+                    buttonUIs[i].descText.color = Color.black;
+
+                    buttonUIs[i].descText.outlineWidth = 0.25f; 
+                    buttonUIs[i].descText.outlineColor = cardOption.Tier.rarityColor;
+                }
+                
+                if (buttonUIs[i].iconImage != null && cardOption.Tier.rarityIcon != null) 
+                {
+                    buttonUIs[i].iconImage.sprite = cardOption.Tier.rarityIcon;
+                }
 
                 upgradeButtons[i].onClick.RemoveAllListeners();
-                upgradeButtons[i].onClick.AddListener(() => OnUpgradeSelected(cardData));
+                upgradeButtons[i].onClick.AddListener(() => OnUpgradeSelected(cardOption));
             }
             else
             {
@@ -61,11 +75,11 @@ public class UpgradeUIManager : MonoBehaviour
         }
     }
 
-    private void OnUpgradeSelected(UpgradeData selectedUpgrade)
+    private void OnUpgradeSelected(UpgradeManager.UpgradeOption selectedOption)
     {
-        upgradeManager.AddUpgrade(selectedUpgrade);
+        upgradeManager.AddUpgrade(selectedOption);
 
-        levelUpPanel.SetActive(false);
+        if (levelUpPanel != null) levelUpPanel.SetActive(false);
         Time.timeScale = 1f;
     }
 }

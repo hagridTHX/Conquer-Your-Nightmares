@@ -4,35 +4,44 @@ using UnityEngine;
 public abstract class Enemy : MonoBehaviour, IDamageable
 {
     [Header("Core Stats")]
-    [SerializeField] protected float maxHealth = 30f;
-    [SerializeField] protected float moveSpeed = 5f;
+    [SerializeField] private float maxHealth = 30f;
+    [SerializeField] private float moveSpeed = 5f;
     
     [Header("Attack Stats")]
-    [SerializeField] protected float damage = 15f;
-    [SerializeField] protected float knockbackOnPlayer = 3f;
-    [SerializeField] protected float attackCooldown = 0.8f;
+    [SerializeField] private float damage = 15f;
+    [SerializeField] private float knockbackOnPlayer = 3f;
+    [SerializeField] private float attackCooldown = 0.8f;
 
     [Header("Physics")]
-    [SerializeField] protected float knockbackResistance = 0f;
+    [SerializeField] private float knockbackResistance = 0f;
     
     [Header("XP")]
-    [SerializeField] protected GameObject xpGemPrefab; 
-    [SerializeField] protected float baseXpReward = 10f; 
-    
+    [SerializeField] private GameObject xpGemPrefab; 
+    [SerializeField] private float baseXpReward = 10f; 
+
+    [Header("Obstacle Avoidance")]
+    [SerializeField] private float obstacleDetectionDistance = 2.5f;
+    [SerializeField] private float sensorHeight = 0.5f;
+    [SerializeField] private LayerMask obstacleLayer;
+
+    public float MaxHealth { get => maxHealth; set => maxHealth = value; }
+    public float MoveSpeed { get => moveSpeed; set => moveSpeed = value; }
+    public float Damage { get => damage; set => damage = value; }
+    public float BaseXpReward { get => baseXpReward; set => baseXpReward = value; }
+
     protected float currentHealth;
     protected Transform playerTarget;
     protected Rigidbody rb;
     protected bool isDead = false;
-    
-    private float nextAttackTime = 0f;
-
     protected bool isTouchingPlayer = false; 
     protected float knockbackTimer = 0f;
+    
+    private float nextAttackTime = 0f;
 
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
-        currentHealth = maxHealth;
+        currentHealth = MaxHealth;
         
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) playerTarget = playerObj.transform;
@@ -87,15 +96,35 @@ public abstract class Enemy : MonoBehaviour, IDamageable
             
             return;
         }
-        else
-        {
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
-        }
 
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
         HandleMovement();
     }
 
     protected abstract void HandleMovement();
+
+    protected Vector3 ApplyObstacleAvoidance(Vector3 desiredDirection)
+    {
+        Vector3 origin = transform.position + Vector3.up * sensorHeight;
+        
+        Vector3 dirLeft = Quaternion.Euler(0, -35, 0) * desiredDirection;
+        Vector3 dirRight = Quaternion.Euler(0, 35, 0) * desiredDirection;
+
+        bool hitCenter = Physics.Raycast(origin, desiredDirection, obstacleDetectionDistance, obstacleLayer);
+        bool hitLeft = Physics.Raycast(origin, dirLeft, obstacleDetectionDistance, obstacleLayer);
+        bool hitRight = Physics.Raycast(origin, dirRight, obstacleDetectionDistance, obstacleLayer);
+
+        if (hitCenter)
+        {
+            if (!hitRight) return Quaternion.Euler(0, 70, 0) * desiredDirection;
+            if (!hitLeft) return Quaternion.Euler(0, -70, 0) * desiredDirection;
+            return Quaternion.Euler(0, 120, 0) * desiredDirection;
+        }
+        if (hitLeft) return Quaternion.Euler(0, 45, 0) * desiredDirection;
+        if (hitRight) return Quaternion.Euler(0, -45, 0) * desiredDirection;
+
+        return desiredDirection;
+    }
 
     public virtual void TakeDamage(float amount, Vector3 knockbackDir, float knockbackForce)
     {
@@ -108,8 +137,6 @@ public abstract class Enemy : MonoBehaviour, IDamageable
 
         float finalKnockback = knockbackForce * (1f - knockbackResistance);
         rb.AddForce(knockbackDir * finalKnockback, ForceMode.Impulse);
-
-        Debug.Log($"{gameObject.name} oberwał za {amount:F1}. HP: {currentHealth}");
 
         if (currentHealth <= 0) Die();
     }
@@ -126,7 +153,7 @@ public abstract class Enemy : MonoBehaviour, IDamageable
             XPGem gemScript = droppedGem.GetComponent<XPGem>();
             if (gemScript != null)
             {
-                gemScript.xpValue = baseXpReward;
+                gemScript.xpValue = BaseXpReward;
             }
         }
 
@@ -148,7 +175,7 @@ public abstract class Enemy : MonoBehaviour, IDamageable
                 {
                     Vector3 dir = (collision.transform.position - transform.position).normalized;
                     dir.y = 0; 
-                    playerHealth.TakeDamage(damage, dir, knockbackOnPlayer);
+                    playerHealth.TakeDamage(Damage, dir, knockbackOnPlayer);
                     nextAttackTime = Time.time + attackCooldown;
                 }
             }
@@ -167,11 +194,24 @@ public abstract class Enemy : MonoBehaviour, IDamageable
     
     public virtual void UpgradeStats(float healthMultiplier, float damageMultiplier, float speedMultiplier, float scaleMultiplier = 1f)
     {
-        maxHealth *= healthMultiplier;
-        currentHealth = maxHealth;
-        damage *= damageMultiplier;
-        moveSpeed *= speedMultiplier;
+        MaxHealth *= healthMultiplier;
+        currentHealth = MaxHealth;
+        Damage *= damageMultiplier;
+        MoveSpeed *= speedMultiplier;
         transform.localScale *= scaleMultiplier;
-        baseXpReward *= healthMultiplier;
+        BaseXpReward *= healthMultiplier;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 origin = transform.position + Vector3.up * sensorHeight;
+        Vector3 fwd = transform.forward;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(origin, origin + fwd * obstacleDetectionDistance);
+        
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(origin, origin + (Quaternion.Euler(0, -35, 0) * fwd) * obstacleDetectionDistance);
+        Gizmos.DrawLine(origin, origin + (Quaternion.Euler(0, 35, 0) * fwd) * obstacleDetectionDistance);
     }
 }

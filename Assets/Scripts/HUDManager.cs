@@ -49,7 +49,7 @@ public class HUDManager : MonoBehaviour
 
     private void UpdateLevel(int newLevel)
     {
-        if (levelText != null) levelText.text = "LVL: " + newLevel;
+        if (levelText != null) levelText.text = "LEVEL: " + newLevel;
     }
 
     // Accept authoritative session time so UI stays consistent with game state.

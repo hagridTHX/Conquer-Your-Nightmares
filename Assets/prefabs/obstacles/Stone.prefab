@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4131336492195522223}
   - component: {fileID: 1258835296559663211}
   - component: {fileID: 5245347542628284708}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Stone
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 69bd3c1be5ed7ad4d95e7005d5568192, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -110,5 +110,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1, y: 4, z: 1}
   m_Center: {x: 0, y: 0, z: 0}

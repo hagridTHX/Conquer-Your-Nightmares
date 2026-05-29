@@ -2,16 +2,9 @@ using UnityEngine;
 
 public class SmartEnemy : Enemy 
 {
-    [Tooltip("Distance at which the enemy starts anticipating an attack.")]
     [SerializeField] private float detectionRange = 5.0f;
-    
-    [Tooltip("Player speed threshold that triggers a dodge response.")]
     [SerializeField] private float dangerousVelocity = 5.0f;
-    
-    [Tooltip("Retreat speed during a dodge.")]
     [SerializeField] private float dodgeSpeed = 12f;
-
-    [Tooltip("Dodge duration in seconds; prevents rapid oscillation.")]
     [SerializeField] private float dodgeDuration = 0.3f;
 
     private Rigidbody playerRb;
@@ -54,19 +47,20 @@ public class SmartEnemy : Enemy
         {
             moveDir = -directionToPlayer;
             currentSpeed = dodgeSpeed; 
-            Debug.DrawRay(transform.position, Vector3.up * 3, Color.cyan);
         }
         else
         {
             moveDir = directionToPlayer;
-            currentSpeed = moveSpeed;
+            currentSpeed = MoveSpeed;
         }
 
-        rb.linearVelocity = new Vector3(moveDir.x * currentSpeed, rb.linearVelocity.y, moveDir.z * currentSpeed);
+        Vector3 finalDirection = ApplyObstacleAvoidance(moveDir);
 
-        if (directionToPlayer != Vector3.zero)
+        rb.linearVelocity = new Vector3(finalDirection.x * currentSpeed, rb.linearVelocity.y, finalDirection.z * currentSpeed);
+
+        if (finalDirection != Vector3.zero)
         {
-            Quaternion lookRot = Quaternion.LookRotation(directionToPlayer);
+            Quaternion lookRot = Quaternion.LookRotation(finalDirection);
             rb.rotation = Quaternion.Slerp(rb.rotation, lookRot, 10f * Time.fixedDeltaTime);
         }
     }

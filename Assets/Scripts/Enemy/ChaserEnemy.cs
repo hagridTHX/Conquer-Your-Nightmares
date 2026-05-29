@@ -4,14 +4,16 @@ public class ChaserEnemy : Enemy
 {
     protected override void HandleMovement()
     {
-        Vector3 direction = (playerTarget.position - transform.position).normalized;
-        direction.y = 0; 
+        Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
+        directionToPlayer.y = 0; 
+        
+        Vector3 finalDirection = ApplyObstacleAvoidance(directionToPlayer);
+        
+        rb.linearVelocity = new Vector3(finalDirection.x * MoveSpeed, rb.linearVelocity.y, finalDirection.z * MoveSpeed);
 
-        rb.linearVelocity = new Vector3(direction.x * moveSpeed, rb.linearVelocity.y, direction.z * moveSpeed);
-
-        if (direction != Vector3.zero)
+        if (finalDirection != Vector3.zero)
         {
-            Quaternion lookRot = Quaternion.LookRotation(direction);
+            Quaternion lookRot = Quaternion.LookRotation(finalDirection);
             rb.rotation = Quaternion.Slerp(rb.rotation, lookRot, 10f * Time.fixedDeltaTime);
         }
     }

@@ -2,20 +2,10 @@ using UnityEngine;
 
 public class SwarmEnemy : Enemy
 {
-    [Header("Swarm Settings (Flocking)")]
-    [Tooltip("Neighbor detection radius for flocking.")]
     [SerializeField] private float swarmRadius = 3.0f;
-
-    [Tooltip("Separation strength to avoid overlap.")]
     [SerializeField] private float separationWeight = 2.0f;
-
-    [Tooltip("Cohesion strength to keep the swarm compact.")]
     [SerializeField] private float cohesionWeight = 1.5f;
-
-    [Tooltip("Alignment strength to match group heading.")]
     [SerializeField] private float alignmentWeight = 1.0f;
-
-    [Tooltip("Target pull toward the player.")]
     [SerializeField] private float targetWeight = 3.0f;
 
     protected override void HandleMovement()
@@ -66,16 +56,17 @@ public class SwarmEnemy : Enemy
         Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
         directionToPlayer.y = 0;
 
-        // Blend weighted steering terms to keep cohesion while pursuing the target.
-        Vector3 finalDirection = (directionToPlayer * targetWeight) + 
-                                 (separationMove * separationWeight) + 
-                                 (cohesionMove * cohesionWeight) + 
-                                 (alignmentMove * alignmentWeight);
+        Vector3 flockingDirection = (directionToPlayer * targetWeight) + 
+                                    (separationMove * separationWeight) + 
+                                    (cohesionMove * cohesionWeight) + 
+                                    (alignmentMove * alignmentWeight);
         
-        finalDirection.y = 0;
-        finalDirection.Normalize();
+        flockingDirection.y = 0;
+        flockingDirection.Normalize();
 
-        rb.linearVelocity = new Vector3(finalDirection.x * moveSpeed, rb.linearVelocity.y, finalDirection.z * moveSpeed);
+        Vector3 finalDirection = ApplyObstacleAvoidance(flockingDirection);
+
+        rb.linearVelocity = new Vector3(finalDirection.x * MoveSpeed, rb.linearVelocity.y, finalDirection.z * MoveSpeed);
 
         if (finalDirection != Vector3.zero)
         {

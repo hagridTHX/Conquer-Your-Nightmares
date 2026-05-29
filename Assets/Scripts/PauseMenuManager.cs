@@ -6,24 +6,27 @@ using UnityEngine.UI;
 
 public class PauseMenuManager : MonoBehaviour
 {
-    [Header("UI References")]
-    public GameObject pauseMenuPanel;
-    public GameObject settingsPanel; 
-    public Transform statsContainer; 
-    public GameObject statPrefab;    
+    [SerializeField] private GameObject pauseMenuPanel;
+    [SerializeField] private GameObject settingsPanel; 
+    [SerializeField] private Transform statsContainer; 
+    [SerializeField] private GameObject statPrefab;    
+    [SerializeField] private UpgradeManager upgradeManager;
 
-    [Header("Logic References")]
-    public UpgradeManager upgradeManager;
+    public GameObject PauseMenuPanel { get => pauseMenuPanel; set => pauseMenuPanel = value; }
+    public GameObject SettingsPanel { get => settingsPanel; set => settingsPanel = value; }
+    public Transform StatsContainer { get => statsContainer; set => statsContainer = value; }
+    public GameObject StatPrefab { get => statPrefab; set => statPrefab = value; }
+    public UpgradeManager UpgradeManager { get => upgradeManager; set => upgradeManager = value; }
 
     private bool isPaused = false;
 
-    void Start()
+    private void Start()
     {
-        pauseMenuPanel.SetActive(false);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
     }
 
-    void Update()
+    private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
@@ -44,7 +47,7 @@ public class PauseMenuManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f; 
-        pauseMenuPanel.SetActive(true);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
         RefreshStatsUI(); 
     }
 
@@ -52,13 +55,13 @@ public class PauseMenuManager : MonoBehaviour
     {
         isPaused = false;
         Time.timeScale = 1f; 
-        pauseMenuPanel.SetActive(false);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
     }
 
     public void OpenSettings()
     {
-        pauseMenuPanel.SetActive(false);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(true);
         Debug.Log("Wyświetlam Ustawienia (Placeholder)");
     }
@@ -66,7 +69,7 @@ public class PauseMenuManager : MonoBehaviour
     public void CloseSettings()
     {
         if (settingsPanel != null) settingsPanel.SetActive(false);
-        pauseMenuPanel.SetActive(true);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
     }
 
     public void QuitToMainMenu()
@@ -89,23 +92,14 @@ public class PauseMenuManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        foreach (var entry in upgradeManager.activeUpgrades)
+        foreach (var entry in upgradeManager.ActiveUpgrades)
         {
             GameObject newStat = Instantiate(statPrefab, statsContainer);
             
             TextMeshProUGUI textComp = newStat.GetComponentInChildren<TextMeshProUGUI>();
             if (textComp != null)
             {
-                textComp.text = $"{entry.data.upgradeName} (LVL {entry.currentLevel})";
-            }
-            
-            Image[] images = newStat.GetComponentsInChildren<Image>();
-            foreach(var img in images)
-            {
-                if (img.gameObject.name == "IconImage" && entry.data.icon != null)
-                {
-                    img.sprite = entry.data.icon;
-                }
+                textComp.text = $"{entry.data.UpgradeName} (LVL {entry.currentLevel})";
             }
         }
     }
